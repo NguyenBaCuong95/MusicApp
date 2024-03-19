@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">MusicApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="navigation_drawer_open">navigation_drawer_open</string>
+    <string name="navigation_drawer_close">navigation_drawer_close</string>
+    <string name="music_app">Music App</string>
+    <string name="all_song">All songs</string>
+    <string name="featured_song">Featured Songs</string>
+    <string name="contact">Contact</string>
+    <string name="feedback">Feedback</string>
+    <string name="popular">Popular Songs</string>
+    <string name="new_song">New Songs</string>
+    <string name="music_player">Music Player</string>
+    <string name="label_start_time">00:00</string>
+</resources>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:icon="@drawable/home_24"
+        android:title="Home"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/nav_allsong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="All Songs"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/nav_featuresong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Featured Song"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/nav_popularsong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Popular Song"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/nav_newsong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="New Song" />
+    <item
+        android:id="@+id/nav_feedback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="FeedBack"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/nav_contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:icon="@drawable/contact_phone_24"
+        android:title="Contact"
+        app:showAsAction="ifRoom|withText" />
+</menu>
