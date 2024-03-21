@@ -1,21 +1,22 @@
 package com.example.musicapp.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
+import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
-import android.widget.SeekBar;
 
 import com.example.musicapp.R;
 import com.example.musicapp.constant.Constant;
@@ -29,9 +30,8 @@ import com.example.musicapp.utils.GlideUtils;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
+@SuppressLint("NonConstantResourceId")
 public class PlaySongFragment extends Fragment implements View.OnClickListener {
-
 
     private FragmentPlaySongBinding mFragmentPlaySongBinding;
     private Timer mTimer;
@@ -189,19 +189,18 @@ public class PlaySongFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-
         int id = v.getId();
-        if (id == R.id.img_previous) {
+        if(id == R.id.img_previous){
             clickOnPrevButton();
         }
-        if (id == R.id.img_play) {
+        if(id ==  R.id.img_play){
             clickOnPlayButton();
         }
-        if (id == R.id.img_next) {
+        if(id==R.id.img_next){
             clickOnNextButton();
         }
-    }
 
+    }
 
     private void clickOnPrevButton() {
         GlobalFuntion.startMusicService(getActivity(), Constant.PREVIOUS, MusicService.mSongPosition);

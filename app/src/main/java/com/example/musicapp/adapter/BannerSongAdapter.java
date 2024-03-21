@@ -1,68 +1,61 @@
 package com.example.musicapp.adapter;
 
-import android.media.Image;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.musicapp.databinding.ItemBannerBinding;
-import com.example.musicapp.listener.OnClickSongBannerListener;
+
+import com.example.musicapp.databinding.ItemBannerSongBinding;
+import com.example.musicapp.listener.IOnClickSongItemListener;
 import com.example.musicapp.model.Song;
+import com.example.musicapp.utils.GlideUtils;
 
 import java.util.List;
 
-public class BannerSongAdapter extends RecyclerView.Adapter<BannerSongAdapter.BannerSong> {
+public class BannerSongAdapter extends RecyclerView.Adapter<BannerSongAdapter.BannerSongViewHolder> {
 
-    private List<Song> list;
-    private OnClickSongBannerListener listener;
+    private final List<Song> mListSongs;
+    public final IOnClickSongItemListener iOnClickSongItemListener;
 
-    public BannerSongAdapter(List<Song> list, OnClickSongBannerListener listener) {
-        this.list = list;
-        this.listener = listener;
+    public BannerSongAdapter(List<Song> mListSongs, IOnClickSongItemListener iOnClickSongItemListener) {
+        this.mListSongs = mListSongs;
+        this.iOnClickSongItemListener = iOnClickSongItemListener;
     }
 
     @NonNull
     @Override
-    public BannerSong onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemBannerBinding binding = ItemBannerBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-        binding.getRoot().setLayoutParams(new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        return new BannerSong(binding.getRoot(), binding);
+    public BannerSongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ItemBannerSongBinding itemBannerSongBinding = ItemBannerSongBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new BannerSongViewHolder(itemBannerSongBinding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BannerSong holder, int position) {
-        Song song = list.get(position);
-        holder.onBind(song);
+    public void onBindViewHolder(@NonNull BannerSongViewHolder holder, int position) {
+        Song song = mListSongs.get(position);
+        if (song == null) {
+            return;
+        }
+        GlideUtils.loadUrlBanner(song.getImage(), holder.mItemBannerSongBinding.imageBanner);
+        holder.mItemBannerSongBinding.layoutItem.setOnClickListener(v -> iOnClickSongItemListener.onClickItemSong(song));
     }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        if (mListSongs != null) {
+            return mListSongs.size();
+        }
+        return 0;
     }
 
-    class BannerSong extends RecyclerView.ViewHolder {
-        private ItemBannerBinding binding;
+    public static class BannerSongViewHolder extends RecyclerView.ViewHolder {
 
-        public BannerSong(@NonNull View itemView, ItemBannerBinding binding) {
-            super(itemView);
-            this.binding = binding;
-        }
+        private final ItemBannerSongBinding mItemBannerSongBinding;
 
-        public void onBind(Song song) {
-            Glide.with(binding.imageView4.getContext())
-                    .load(song.getImage())
-                    .into(binding.imageView4);
-            binding.getRoot().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClick(song);
-                }
-            });
+        public BannerSongViewHolder(@NonNull ItemBannerSongBinding itemBannerSongBinding) {
+            super(itemBannerSongBinding.getRoot());
+            this.mItemBannerSongBinding = itemBannerSongBinding;
         }
     }
 }

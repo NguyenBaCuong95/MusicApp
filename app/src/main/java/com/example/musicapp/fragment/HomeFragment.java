@@ -1,157 +1,250 @@
 package com.example.musicapp.fragment;
 
-import android.app.ActionBar;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.viewpager2.widget.ViewPager2;
-
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.viewpager2.widget.ViewPager2;
+
 
 import com.example.musicapp.MyApplycation;
+import com.example.musicapp.R;
+import com.example.musicapp.activity.MainActivity;
 import com.example.musicapp.activity.PlayMusicActivity;
-import com.example.musicapp.adapter.AllSongAdapter;
 import com.example.musicapp.adapter.BannerSongAdapter;
+import com.example.musicapp.adapter.SongAdapter;
+import com.example.musicapp.adapter.SongGridAdapter;
 import com.example.musicapp.constant.Constant;
 import com.example.musicapp.constant.GlobalFuntion;
 import com.example.musicapp.databinding.FragmentHomeBinding;
-import com.example.musicapp.listener.OnClickSongBannerListener;
 import com.example.musicapp.model.Song;
 import com.example.musicapp.service.MusicService;
+import com.example.musicapp.utils.StringUtil;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-
 public class HomeFragment extends Fragment {
-    private FragmentHomeBinding binding;
-    private List<Song> listbanner;
-    private List<Song> listSong;
-    private Handler handler = new Handler();
-    private Runnable runnable = new Runnable() {
+
+    private FragmentHomeBinding mFragmentHomeBinding;
+
+    private List<Song> mListSong;
+    private List<Song> mListSongBanner;
+
+    private final Handler mHandlerBanner = new Handler();
+    private final Runnable mRunnableBanner = new Runnable() {
         @Override
         public void run() {
-            if (listbanner == null || listbanner.isEmpty()) {
+            if (mListSongBanner == null || mListSongBanner.isEmpty()) {
                 return;
-            } else {
-                if (binding.viewPager2.getCurrentItem() == listbanner.size() - 1) {
-                    binding.viewPager2.setCurrentItem(0);
-                    return;
-                }
-                else {
-                binding.viewPager2.setCurrentItem(binding.viewPager2.getCurrentItem() + 1);}
-
             }
+            if (mFragmentHomeBinding.viewpager2.getCurrentItem() == mListSongBanner.size() - 1) {
+                mFragmentHomeBinding.viewpager2.setCurrentItem(0);
+                return;
+            }
+            mFragmentHomeBinding.viewpager2.setCurrentItem(mFragmentHomeBinding.viewpager2.getCurrentItem() + 1);
         }
     };
 
-
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-        getListSongFirebase("");
-        initlistener();
-        return binding.getRoot();
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mFragmentHomeBinding = FragmentHomeBinding.inflate(inflater, container, false);
+
+        getListSongFromFirebase("");
+        initListener();
+
+        return mFragmentHomeBinding.getRoot();
     }
 
-    private void initlistener() {
-binding.imageSearchsong.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-        searchSong();
+    private void initListener() {
+        mFragmentHomeBinding.edtSearchName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Do nothing
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String strKey = s.toString().trim();
+                if (strKey.equals("") || strKey.length() == 0) {
+                    if (mListSong != null) mListSong.clear();
+                    getListSongFromFirebase("");
+                }
+            }
+        });
+
+        mFragmentHomeBinding.imgSearch.setOnClickListener(view -> searchSong());
+
+        mFragmentHomeBinding.edtSearchName.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                searchSong();
+                return true;
+            }
+            return false;
+        });
+
+        mFragmentHomeBinding.layoutViewAllPopular.setOnClickListener(v -> {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            if (mainActivity != null) {
+                mainActivity.openPopularSongsScreen();
+            }
+        });
+
+        mFragmentHomeBinding.layoutViewAllNewSongs.setOnClickListener(v -> {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            if (mainActivity != null) {
+                mainActivity.openNewSongsScreen();
+            }
+        });
     }
 
-    private void searchSong() {
-        String strKey = binding.txtSearch.getText().toString().trim();
-        if (listSong != null) {listSong.clear();}
-        getListSongFirebase(strKey);
-        GlobalFuntion.hideSoftKeyboard(getActivity());
-    }
-});
-    }
-
-    private void getListSongFirebase(String key) {
-        MyApplycation.referenceSong().addValueEventListener(new ValueEventListener() {
+    private void getListSongFromFirebase(String key) {
+        if (getActivity() == null) {
+            return;
+        }
+        MyApplycation.get(getActivity()).getSongsDatabaseReference().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                listSong = new ArrayList<>();
-                for (DataSnapshot snapshot1 : snapshot.getChildren()) {
-                    Song song = snapshot1.getValue(Song.class);
-                    if (key.isEmpty()) {
-                        listSong.add(song);
+                mFragmentHomeBinding.layoutContent.setVisibility(View.VISIBLE);
+                mListSong = new ArrayList<>();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Song song = dataSnapshot.getValue(Song.class);
+                    if (song == null) {
+                        return;
+                    }
+
+                    if (StringUtil.isEmpty(key)) {
+                        mListSong.add(0, song);
                     } else {
-                        if (song.getTitle().compareToIgnoreCase(key) == 0) {
-                            listSong.add(song);
+                        if (GlobalFuntion.getTextSearch(song.getTitle()).toLowerCase().trim()
+                                .contains(GlobalFuntion.getTextSearch(key).toLowerCase().trim())) {
+                            mListSong.add(0, song);
                         }
                     }
                 }
-                showBannerSong();
-                showAllSong();
-
+                displayListBannerSongs();
+                displayListPopularSongs();
+                displayListNewSongs();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                GlobalFuntion.showToastMessage(getActivity(), getString(R.string.msg_get_date_error));
             }
         });
     }
 
-    private void showBannerSong() {
-        listbanner = getListBanner();
-        BannerSongAdapter adapter = new BannerSongAdapter(listbanner, new OnClickSongBannerListener() {
-            @Override
-            public void onClick(Song song) {
-                goToSongDetail(song);
-            }
-        });
-        binding.viewPager2.setAdapter(adapter);
-        binding.circleIndicator3.setViewPager(binding.viewPager2);
-        binding.viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+    private void displayListBannerSongs() {
+        BannerSongAdapter bannerSongAdapter = new BannerSongAdapter(getListBannerSongs(), this::goToSongDetail);
+        mFragmentHomeBinding.viewpager2.setAdapter(bannerSongAdapter);
+        mFragmentHomeBinding.indicator3.setViewPager(mFragmentHomeBinding.viewpager2);
+
+        mFragmentHomeBinding.viewpager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                handler.removeCallbacks(runnable);
-                handler.postDelayed(runnable, 2000);
+                mHandlerBanner.removeCallbacks(mRunnableBanner);
+                mHandlerBanner.postDelayed(mRunnableBanner, 3000);
             }
         });
     }
 
-    private void goToSongDetail(Song song) {
+    private List<Song> getListBannerSongs() {
+        if (mListSongBanner != null) {
+            mListSongBanner.clear();
+        } else {
+            mListSongBanner = new ArrayList<>();
+        }
+        if (mListSong == null || mListSong.isEmpty()) {
+            return mListSongBanner;
+        }
+        for (Song song : mListSong) {
+            if (song.isFeatured() && mListSongBanner.size() < Constant.MAX_COUNT_BANNER) {
+                mListSongBanner.add(song);
+            }
+        }
+        return mListSongBanner;
+    }
+
+    private void displayListPopularSongs() {
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+        mFragmentHomeBinding.rcvPopularSongs.setLayoutManager(gridLayoutManager);
+
+        SongGridAdapter songGridAdapter = new SongGridAdapter(getListPopularSongs(), this::goToSongDetail);
+        mFragmentHomeBinding.rcvPopularSongs.setAdapter(songGridAdapter);
+    }
+
+    private List<Song> getListPopularSongs() {
+        List<Song> list = new ArrayList<>();
+        if (mListSong == null || mListSong.isEmpty()) {
+            return list;
+        }
+        List<Song> allSongs = new ArrayList<>(mListSong);
+        Collections.sort(allSongs, (song1, song2) -> song2.getCount() - song1.getCount());
+        for (Song song : allSongs) {
+            if (list.size() < Constant.MAX_COUNT_POPULAR) {
+                list.add(song);
+            }
+        }
+        return list;
+    }
+
+    private void displayListNewSongs() {
+        if (getActivity() == null) {
+            return;
+        }
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        mFragmentHomeBinding.rcvNewSongs.setLayoutManager(linearLayoutManager);
+
+        SongAdapter songAdapter = new SongAdapter(getListNewSongs(), this::goToSongDetail);
+        mFragmentHomeBinding.rcvNewSongs.setAdapter(songAdapter);
+    }
+
+    private List<Song> getListNewSongs() {
+        List<Song> list = new ArrayList<>();
+        if (mListSong == null || mListSong.isEmpty()) {
+            return list;
+        }
+        for (Song song : mListSong) {
+            if (song.isLatest() && list.size() < Constant.MAX_COUNT_LATEST) {
+                list.add(song);
+            }
+        }
+        return list;
+    }
+
+    private void searchSong() {
+        String strKey = mFragmentHomeBinding.edtSearchName.getText().toString().trim();
+        if (mListSong != null) mListSong.clear();
+        getListSongFromFirebase(strKey);
+        GlobalFuntion.hideSoftKeyboard(getActivity());
+    }
+
+    private void goToSongDetail(@NonNull Song song) {
         MusicService.clearListSongPlaying();
         MusicService.mListSongPlaying.add(song);
         MusicService.isPlaying = false;
         GlobalFuntion.startMusicService(getActivity(), Constant.PLAY, 0);
         GlobalFuntion.startActivity(getActivity(), PlayMusicActivity.class);
-    }
-
-    private List<Song> getListBanner() {
-        listbanner = new ArrayList<>();
-        for (int i = 0; i < listSong.size(); i++) {
-            if (listSong.get(i).isFeatured() && listbanner.size() <= 5) {
-                listbanner.add(listSong.get(i));
-            }
-        }
-        return listbanner;
-    }
-
-    private void showAllSong() {
-        AllSongAdapter adapter = new AllSongAdapter(listSong, new OnClickSongBannerListener() {
-            @Override
-            public void onClick(Song song) {
-                goToSongDetail(song);
-            }
-        });
-        binding.rcvPopularSong.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-        binding.rcvPopularSong.setAdapter(adapter);
     }
 }

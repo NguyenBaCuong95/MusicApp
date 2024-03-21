@@ -11,4 +11,11 @@
     <dimen name="text_size_normal">16sp</dimen>
     <dimen name="define_dimen_2">2dp</dimen>
     <dimen name="define_dimen_20">20dp</dimen>
+    <dimen name="define_dimen_6">6dp</dimen>
+    <dimen name="define_dimen_80">88dp</dimen>
+    <dimen name="define_dimen_120">120dp</dimen>
+    <dimen name="text_size_xnormal">18sp</dimen>
+    <dimen name="define_dimen_12">12dp</dimen>
+    <dimen name="define_dimen_35">35dp</dimen>
+    <dimen name="define_dimen_8">8dp</dimen>
 </resources>

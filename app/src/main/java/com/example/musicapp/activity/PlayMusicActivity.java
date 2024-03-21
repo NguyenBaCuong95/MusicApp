@@ -1,35 +1,36 @@
 package com.example.musicapp.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+import android.view.View;
 
 import com.example.musicapp.R;
 import com.example.musicapp.adapter.MusicViewPagerAdapter;
 import com.example.musicapp.databinding.ActivityPlayMusicBinding;
 
-public class PlayMusicActivity extends AppCompatActivity {
-    private ActivityPlayMusicBinding binding;
+public class PlayMusicActivity extends  BaseActivity {
+    private ActivityPlayMusicBinding mActivityPlayMusicBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityPlayMusicBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        mActivityPlayMusicBinding = ActivityPlayMusicBinding.inflate(getLayoutInflater());
+        setContentView(mActivityPlayMusicBinding.getRoot());
 
         initToolbar();
         initUI();
+    }
 
+    private void initToolbar() {
+        mActivityPlayMusicBinding.toolbar.imgLeft.setImageResource(R.drawable.ic_back_white);
+        mActivityPlayMusicBinding.toolbar.tvTitle.setText(R.string.music_player);
+        mActivityPlayMusicBinding.toolbar.layoutPlayAll.setVisibility(View.GONE);
+        mActivityPlayMusicBinding.toolbar.imgLeft.setOnClickListener(v -> onBackPressed());
     }
 
     private void initUI() {
         MusicViewPagerAdapter musicViewPagerAdapter = new MusicViewPagerAdapter(this);
-        binding.viewpager2.setAdapter(musicViewPagerAdapter);
-        binding.indicator3.setViewPager(binding.viewpager2);
-        binding.viewpager2.setCurrentItem(1);
-    }
-
-    private void initToolbar() {
-        binding.toolbar.tittle.setText(R.string.music_player);
+        mActivityPlayMusicBinding.viewpager2.setAdapter(musicViewPagerAdapter);
+        mActivityPlayMusicBinding.indicator3.setViewPager(mActivityPlayMusicBinding.viewpager2);
+        mActivityPlayMusicBinding.viewpager2.setCurrentItem(1);
     }
 }
